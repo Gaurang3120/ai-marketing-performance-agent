@@ -15,7 +15,7 @@ SRC_DIR = BASE_DIR / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from agent import app
+from agent import app, save_audit
 
 
 # ============================================================
@@ -30,45 +30,131 @@ st.set_page_config(
 
 
 # ============================================================
-# CSS
+# CUSTOM CSS
 # ============================================================
 
-st.markdown("""
-<style>
+st.markdown(
+    """
+    <style>
 
-.stApp {
-    background-color: #f5f7fb;
-}
+    /* ======================================================
+       MAIN APP
+       ====================================================== */
 
-h1 {
-    color: #111827;
-}
+    .stApp {
+        background-color: #f5f7fb;
+    }
 
-h2 {
-    color: #111827;
-}
+    .main .block-container {
+        color: #111827;
+    }
 
-h3 {
-    color: #374151;
-}
+    /* All normal markdown text */
+    .stMarkdown,
+    .stMarkdown p,
+    .stMarkdown li,
+    .stMarkdown span {
+        color: #111827;
+    }
 
-div[data-testid="metric-container"] {
-    background-color: white;
-    border: 1px solid #e5e7eb;
-    padding: 15px;
-    border-radius: 12px;
-}
+    /* Headings */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: #111827 !important;
+    }
 
-section[data-testid="stSidebar"] {
-    background-color: #111827;
-}
+    /* Captions */
+    .stCaption,
+    [data-testid="stCaptionContainer"] {
+        color: #4b5563 !important;
+    }
 
-section[data-testid="stSidebar"] * {
-    color: white;
-}
 
-</style>
-""", unsafe_allow_html=True)
+    /* ======================================================
+       METRICS
+       ====================================================== */
+
+    div[data-testid="metric-container"] {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    div[data-testid="metric-container"] label {
+        color: #374151 !important;
+    }
+
+    div[data-testid="metric-container"] div {
+        color: #111827 !important;
+    }
+
+
+    /* ======================================================
+       SIDEBAR
+       ====================================================== */
+
+    section[data-testid="stSidebar"] {
+        background-color: #111827;
+    }
+
+    section[data-testid="stSidebar"] * {
+        color: #ffffff !important;
+    }
+
+    section[data-testid="stSidebar"] .stCaption {
+        color: #d1d5db !important;
+    }
+
+
+    /* ======================================================
+       SELECTBOX
+       ====================================================== */
+
+    div[data-baseweb="select"] {
+        background-color: #ffffff;
+    }
+
+    div[data-baseweb="select"] * {
+        color: #111827 !important;
+    }
+
+
+    /* ======================================================
+       BUTTONS
+       ====================================================== */
+
+    .stButton > button {
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+
+    /* ======================================================
+       ALERT BOXES
+       ====================================================== */
+
+    div[data-testid="stAlert"] p {
+        color: inherit !important;
+    }
+
+
+    /* ======================================================
+       DATAFRAME
+       ====================================================== */
+
+    div[data-testid="stDataFrame"] {
+        background-color: #ffffff;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
@@ -119,6 +205,7 @@ def get_campaign_table():
         if "campaign_id" in columns["name"].tolist():
 
             conn.close()
+
             return table
 
     conn.close()
@@ -174,75 +261,6 @@ def get_value(data, *keys, default=0):
 
 
 # ============================================================
-# SAVE HUMAN DECISION
-# ============================================================
-
-def save_human_decision(result, decision):
-
-    db_path = get_database_path()
-
-    if not db_path:
-        raise FileNotFoundError(
-            "Marketing database not found."
-        )
-
-    conn = sqlite3.connect(db_path)
-
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS campaign_audit (
-
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-            campaign_id TEXT,
-
-            priority TEXT,
-
-            priority_score REAL,
-
-            root_cause TEXT,
-
-            recommendation TEXT,
-
-            human_approval TEXT
-
-        )
-        """
-    )
-
-    cursor.execute(
-        """
-        INSERT INTO campaign_audit (
-
-            campaign_id,
-            priority,
-            priority_score,
-            root_cause,
-            recommendation,
-            human_approval
-
-        )
-
-        VALUES (?, ?, ?, ?, ?, ?)
-        """,
-
-        (
-            result["campaign_data"]["campaign_id"],
-            result.get("priority", "N/A"),
-            result.get("priority_score", 0),
-            result.get("root_cause", ""),
-            result.get("recommendation", ""),
-            decision
-        )
-    )
-
-    conn.commit()
-    conn.close()
-
-
-# ============================================================
 # SIDEBAR
 # ============================================================
 
@@ -271,23 +289,30 @@ with st.sidebar:
 
     st.write("🗄️ Campaign Data")
     st.write("↓")
+
     st.write("🔎 Anomaly Detection")
     st.write("↓")
+
     st.write("🎯 Prioritization")
     st.write("↓")
+
     st.write("🧠 AI Analysis")
     st.write("↓")
+
     st.write("🔬 Root Cause")
     st.write("↓")
+
     st.write("💡 Recommendation")
     st.write("↓")
+
     st.write("👤 Human Approval")
     st.write("↓")
+
     st.write("📋 Audit Trail")
 
 
 # ============================================================
-# HEADER
+# MAIN HEADER
 # ============================================================
 
 st.title(
@@ -321,8 +346,9 @@ if page == "Campaign Analysis":
 
         campaign_id = st.text_input(
             "Campaign ID",
-            value="CAMP_09032"
+            value="CAMP_00001"
         )
+
 
     analyze = st.button(
         "🚀 Analyze Campaign",
@@ -357,27 +383,31 @@ if page == "Campaign Analysis":
                         }
                     )
 
-                    st.session_state[
-                        "result"
-                    ] = result
+                    st.session_state["result"] = result
 
                     st.session_state[
                         "campaign_id"
                     ] = campaign_id
 
+                    # Reset previous approval
                     st.session_state.pop(
-                        "approval_result",
+                        "human_decision",
+                        None
+                    )
+
+                    st.session_state.pop(
+                        "audit_status",
                         None
                     )
 
                     st.success(
-                        "Campaign analysis completed."
+                        "✅ Campaign analysis completed."
                     )
 
                 except Exception as e:
 
                     st.error(
-                        "Agent execution failed."
+                        "❌ Agent execution failed."
                     )
 
                     st.exception(e)
@@ -402,16 +432,19 @@ if page == "Campaign Analysis":
         )
 
         if not isinstance(campaign, dict):
+
             campaign = {}
 
 
         # ====================================================
-        # CAMPAIGN INFO
+        # CAMPAIGN OVERVIEW
         # ====================================================
 
         st.divider()
 
-        st.subheader("Campaign Overview")
+        st.subheader(
+            "📋 Campaign Overview"
+        )
 
         platform = get_value(
             campaign,
@@ -429,18 +462,21 @@ if page == "Campaign Analysis":
         col1, col2, col3 = st.columns(3)
 
         with col1:
+
             st.metric(
                 "Campaign ID",
                 campaign_id
             )
 
         with col2:
+
             st.metric(
                 "Platform",
                 platform
             )
 
         with col3:
+
             st.metric(
                 "Objective",
                 objective
@@ -451,7 +487,9 @@ if page == "Campaign Analysis":
         # BUSINESS KPIs
         # ====================================================
 
-        st.subheader("💰 Business KPIs")
+        st.subheader(
+            "💰 Business KPIs"
+        )
 
         impressions = number(
             get_value(
@@ -496,6 +534,7 @@ if page == "Campaign Analysis":
             )
         )
 
+
         cols = st.columns(6)
 
         cols[0].metric(
@@ -530,10 +569,12 @@ if page == "Campaign Analysis":
 
 
         # ====================================================
-        # PERFORMANCE
+        # PERFORMANCE METRICS
         # ====================================================
 
-        st.subheader("📈 Performance Metrics")
+        st.subheader(
+            "📈 Performance Metrics"
+        )
 
         ctr = number(
             get_value(
@@ -581,6 +622,7 @@ if page == "Campaign Analysis":
             )
         )
 
+
         cols = st.columns(6)
 
         cols[0].metric(
@@ -615,10 +657,12 @@ if page == "Campaign Analysis":
 
 
         # ====================================================
-        # ANOMALY
+        # ANOMALY DETECTION
         # ====================================================
 
-        st.subheader("🔎 Anomaly Detection")
+        st.subheader(
+            "🔎 Anomaly Detection"
+        )
 
         anomaly = result.get(
             "anomaly_detected",
@@ -644,7 +688,7 @@ if page == "Campaign Analysis":
 
 
         # ====================================================
-        # PRIORITY
+        # PRIORITIZATION
         # ====================================================
 
         st.subheader(
@@ -702,7 +746,7 @@ if page == "Campaign Analysis":
 
 
         # ====================================================
-        # AI ANALYSIS
+        # AI PERFORMANCE ANALYSIS
         # ====================================================
 
         st.subheader(
@@ -787,35 +831,23 @@ if page == "Campaign Analysis":
             "👤 Human Approval"
         )
 
-        approval_result = st.session_state.get(
-            "approval_result"
+        st.info(
+            "Review the AI recommendation before "
+            "approving or rejecting it."
         )
 
-        if approval_result:
 
-            decision = approval_result.get(
-                "human_decision",
-                "PENDING"
-            )
+        # ----------------------------------------------------
+        # If already approved/rejected
+        # ----------------------------------------------------
 
-            if decision == "APPROVED":
+        current_decision = st.session_state.get(
+            "human_decision",
+            "PENDING"
+        )
 
-                st.success(
-                    "✅ Recommendation approved."
-                )
 
-            elif decision == "REJECTED":
-
-                st.warning(
-                    "❌ Recommendation rejected."
-                )
-
-        else:
-
-            st.info(
-                "Review the AI recommendation before "
-                "approving or rejecting it."
-            )
+        if current_decision == "PENDING":
 
             col1, col2 = st.columns(2)
 
@@ -834,70 +866,103 @@ if page == "Campaign Analysis":
                 )
 
 
-            # =================================================
+            # ------------------------------------------------
             # APPROVE
-            # =================================================
+            # ------------------------------------------------
 
             if approve:
 
                 try:
 
-                    save_human_decision(
-                        result,
-                        "APPROVED"
+                    audit_result = save_audit(
+                        {
+                            **result,
+                            "human_approval": "APPROVED"
+                        }
                     )
 
                     st.session_state[
-                        "approval_result"
-                    ] = {
-                        "human_decision": "APPROVED",
-                        "audit_status": "SAVED"
-                    }
+                        "human_decision"
+                    ] = "APPROVED"
+
+                    st.session_state[
+                        "audit_status"
+                    ] = audit_result.get(
+                        "audit_status",
+                        "SAVED"
+                    )
 
                     st.success(
-                        "Recommendation approved and audit saved."
+                        "✅ Recommendation approved "
+                        "and audit trail saved."
                     )
+
+                    st.rerun()
 
                 except Exception as e:
 
                     st.error(
-                        "Approval failed."
+                        "❌ Approval failed."
                     )
 
                     st.exception(e)
 
 
-            # =================================================
+            # ------------------------------------------------
             # REJECT
-            # =================================================
+            # ------------------------------------------------
 
             if reject:
 
                 try:
 
-                    save_human_decision(
-                        result,
-                        "REJECTED"
+                    audit_result = save_audit(
+                        {
+                            **result,
+                            "human_approval": "REJECTED"
+                        }
                     )
 
                     st.session_state[
-                        "approval_result"
-                    ] = {
-                        "human_decision": "REJECTED",
-                        "audit_status": "SAVED"
-                    }
+                        "human_decision"
+                    ] = "REJECTED"
+
+                    st.session_state[
+                        "audit_status"
+                    ] = audit_result.get(
+                        "audit_status",
+                        "SAVED"
+                    )
 
                     st.warning(
-                        "Recommendation rejected and audit saved."
+                        "❌ Recommendation rejected "
+                        "and audit trail saved."
                     )
+
+                    st.rerun()
 
                 except Exception as e:
 
                     st.error(
-                        "Rejection failed."
+                        "❌ Rejection failed."
                     )
 
                     st.exception(e)
+
+
+        else:
+
+            if current_decision == "APPROVED":
+
+                st.success(
+                    "✅ Recommendation Approved"
+                )
+
+            elif current_decision == "REJECTED":
+
+                st.error(
+                    "❌ Recommendation Rejected"
+                )
 
 
         # ====================================================
@@ -908,32 +973,31 @@ if page == "Campaign Analysis":
             "📋 Audit Trail"
         )
 
-        approval_result = st.session_state.get(
-            "approval_result",
-            {}
-        )
-
-        human_decision = approval_result.get(
+        human_decision = st.session_state.get(
             "human_decision",
             "PENDING"
         )
 
-        audit_status = approval_result.get(
+        audit_status = st.session_state.get(
             "audit_status",
             "NOT SAVED"
         )
 
         col1, col2 = st.columns(2)
 
-        col1.metric(
-            "Human Decision",
-            human_decision
-        )
+        with col1:
 
-        col2.metric(
-            "Audit Status",
-            audit_status
-        )
+            st.metric(
+                "Human Decision",
+                human_decision
+            )
+
+        with col2:
+
+            st.metric(
+                "Audit Status",
+                audit_status
+            )
 
 
 # ============================================================
@@ -947,7 +1011,9 @@ elif page == "Performance Overview":
     )
 
     db_path = get_database_path()
+
     table = get_campaign_table()
+
 
     if not db_path:
 
@@ -974,6 +1040,7 @@ elif page == "Performance Overview":
 
         conn.close()
 
+
         st.write(
             f"Total Campaigns: **{len(df):,}**"
         )
@@ -986,7 +1053,7 @@ elif page == "Performance Overview":
 
 
 # ============================================================
-# ABOUT
+# ABOUT AGENT
 # ============================================================
 
 else:
@@ -1001,6 +1068,7 @@ else:
         performance problems automatically.
         """
     )
+
 
     st.markdown(
         "### Capabilities"
@@ -1034,12 +1102,14 @@ else:
         "✅ Audit Trail"
     )
 
+
     st.markdown(
         "### Technology"
     )
 
     st.write(
-        "Python · LangGraph · LangChain · Gemini · SQLite · Pandas · Streamlit"
+        "Python · LangGraph · LangChain · Gemini · "
+        "SQLite · Pandas · Streamlit"
     )
 
 
@@ -1053,4 +1123,3 @@ st.caption(
     "AI Marketing Performance Agent · "
     "Built with LangGraph + Streamlit"
 )
-
