@@ -38,7 +38,7 @@ st.markdown(
     <style>
 
     /* ======================================================
-       MAIN APP
+       GLOBAL
        ====================================================== */
 
     .stApp {
@@ -46,18 +46,24 @@ st.markdown(
     }
 
     .main .block-container {
-        color: #111827;
+        color: #111827 !important;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
     }
 
-    /* All normal markdown text */
-    .stMarkdown,
-    .stMarkdown p,
-    .stMarkdown li,
-    .stMarkdown span {
-        color: #111827;
+    /* Force normal text to dark */
+    .main .block-container p,
+    .main .block-container li,
+    .main .block-container span,
+    .main .block-container label {
+        color: #111827 !important;
     }
 
-    /* Headings */
+
+    /* ======================================================
+       HEADINGS
+       ====================================================== */
+
     h1,
     h2,
     h3,
@@ -67,7 +73,11 @@ st.markdown(
         color: #111827 !important;
     }
 
-    /* Captions */
+
+    /* ======================================================
+       CAPTIONS
+       ====================================================== */
+
     .stCaption,
     [data-testid="stCaptionContainer"] {
         color: #4b5563 !important;
@@ -75,21 +85,91 @@ st.markdown(
 
 
     /* ======================================================
-       METRICS
+       STREAMLIT METRICS
        ====================================================== */
 
-    div[data-testid="metric-container"] {
-        background-color: #ffffff;
-        border: 1px solid #e5e7eb;
-        padding: 15px;
-        border-radius: 12px;
+    div[data-testid="stMetric"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 12px !important;
+        padding: 16px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
-    div[data-testid="metric-container"] label {
+    div[data-testid="stMetric"] label {
         color: #374151 !important;
     }
 
-    div[data-testid="metric-container"] div {
+    div[data-testid="stMetric"] [data-testid="stMetricLabel"] {
+        color: #374151 !important;
+    }
+
+    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+        color: #111827 !important;
+        font-weight: 700 !important;
+    }
+
+    div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
+        color: #374151 !important;
+    }
+
+
+    /* ======================================================
+       AI OUTPUT CARDS
+       ====================================================== */
+
+    .ai-card {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 22px;
+        margin-top: 8px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .ai-card,
+    .ai-card p,
+    .ai-card li,
+    .ai-card span,
+    .ai-card strong,
+    .ai-card em,
+    .ai-card div {
+        color: #111827 !important;
+    }
+
+    .ai-card p {
+        line-height: 1.65;
+        margin-bottom: 10px;
+    }
+
+    .ai-card li {
+        line-height: 1.6;
+        margin-bottom: 6px;
+    }
+
+    .ai-card strong {
+        font-weight: 700;
+    }
+
+
+    /* ======================================================
+       SECTION CARDS
+       ====================================================== */
+
+    .section-card {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 20px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+
+    .section-card p,
+    .section-card li,
+    .section-card span,
+    .section-card div {
         color: #111827 !important;
     }
 
@@ -99,7 +179,7 @@ st.markdown(
        ====================================================== */
 
     section[data-testid="stSidebar"] {
-        background-color: #111827;
+        background-color: #111827 !important;
     }
 
     section[data-testid="stSidebar"] * {
@@ -116,7 +196,7 @@ st.markdown(
        ====================================================== */
 
     div[data-baseweb="select"] {
-        background-color: #ffffff;
+        background-color: #ffffff !important;
     }
 
     div[data-baseweb="select"] * {
@@ -129,14 +209,19 @@ st.markdown(
        ====================================================== */
 
     .stButton > button {
-        border-radius: 10px;
-        font-weight: 600;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        min-height: 44px;
     }
 
 
     /* ======================================================
-       ALERT BOXES
+       ALERTS
        ====================================================== */
+
+    div[data-testid="stAlert"] {
+        border-radius: 10px;
+    }
 
     div[data-testid="stAlert"] p {
         color: inherit !important;
@@ -148,7 +233,17 @@ st.markdown(
        ====================================================== */
 
     div[data-testid="stDataFrame"] {
-        background-color: #ffffff;
+        background-color: #ffffff !important;
+        border-radius: 12px;
+    }
+
+
+    /* ======================================================
+       DIVIDER
+       ====================================================== */
+
+    hr {
+        border-color: #e5e7eb !important;
     }
 
     </style>
@@ -246,7 +341,7 @@ def number(value):
     try:
         return float(value)
 
-    except:
+    except Exception:
         return 0.0
 
 
@@ -389,7 +484,6 @@ if page == "Campaign Analysis":
                         "campaign_id"
                     ] = campaign_id
 
-                    # Reset previous approval
                     st.session_state.pop(
                         "human_decision",
                         None
@@ -432,7 +526,6 @@ if page == "Campaign Analysis":
         )
 
         if not isinstance(campaign, dict):
-
             campaign = {}
 
 
@@ -761,7 +854,17 @@ if page == "Campaign Analysis":
         if analysis:
 
             st.markdown(
+                '<div class="ai-card">',
+                unsafe_allow_html=True
+            )
+
+            st.markdown(
                 analysis
+            )
+
+            st.markdown(
+                '</div>',
+                unsafe_allow_html=True
             )
 
         else:
@@ -787,7 +890,17 @@ if page == "Campaign Analysis":
         if root_cause:
 
             st.markdown(
+                '<div class="ai-card">',
+                unsafe_allow_html=True
+            )
+
+            st.markdown(
                 root_cause
+            )
+
+            st.markdown(
+                '</div>',
+                unsafe_allow_html=True
             )
 
         else:
@@ -813,7 +926,17 @@ if page == "Campaign Analysis":
         if recommendation:
 
             st.markdown(
+                '<div class="ai-card">',
+                unsafe_allow_html=True
+            )
+
+            st.markdown(
                 recommendation
+            )
+
+            st.markdown(
+                '</div>',
+                unsafe_allow_html=True
             )
 
         else:
@@ -836,10 +959,6 @@ if page == "Campaign Analysis":
             "approving or rejecting it."
         )
 
-
-        # ----------------------------------------------------
-        # If already approved/rejected
-        # ----------------------------------------------------
 
         current_decision = st.session_state.get(
             "human_decision",
@@ -1123,3 +1242,4 @@ st.caption(
     "AI Marketing Performance Agent · "
     "Built with LangGraph + Streamlit"
 )
+
