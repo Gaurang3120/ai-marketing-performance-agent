@@ -67,7 +67,7 @@ def get_anomalies():
 
 if __name__ == "__main__":
 
-    print("\n========== ANOMALY DETECTION ==========\n")
+    print("\nANOMALY DETECTION \n")
 
     anomalies = get_anomalies()
 

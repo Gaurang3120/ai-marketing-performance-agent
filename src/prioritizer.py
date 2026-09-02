@@ -166,7 +166,7 @@ if __name__ == "__main__":
     top_campaign = df.iloc[0]
 
     print(
-        "\n========== TOP PRIORITY CAMPAIGN ==========\n"
+        "\n TOP PRIORITY CAMPAIGN \n"
     )
 
     print(

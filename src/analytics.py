@@ -118,17 +118,17 @@ def get_objective_performance():
 
 if __name__ == "__main__":
 
-    print("\n========== OVERALL PERFORMANCE ==========\n")
+    print("\nOVERALL PERFORMANCE \n")
 
     summary = get_campaign_summary()
     print(summary.to_string(index=False))
 
-    print("\n========== PLATFORM PERFORMANCE ==========\n")
+    print("\nPLATFORM PERFORMANCE \n")
 
     platform_data = get_platform_performance()
     print(platform_data.to_string(index=False))
 
-    print("\n========== UNDERPERFORMING CAMPAIGNS ==========\n")
+    print("\nUNDERPERFORMING CAMPAIGNS \n")
 
     weak_campaigns = get_underperforming_campaigns()
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         weak_campaigns.head(10).to_string(index=False)
     )
 
-    print("\n========== OBJECTIVE PERFORMANCE ==========\n")
+    print("\nOBJECTIVE PERFORMANCE \n")
 
     objective_data = get_objective_performance()
 
